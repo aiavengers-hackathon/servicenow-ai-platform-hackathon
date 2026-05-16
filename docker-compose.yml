@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+
+  frontend:
+    build: ./frontend
+    container_name: sn-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - sn-network
+
+  backend:
+    build: ./backend
+    container_name: sn-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/servicenow
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    depends_on:
+      - postgres
+      - chromadb
+      - ollama
+    volumes:
+      - ./data:/app/data
+    networks:
+      - sn-network
+
+  postgres:
+    image: postgres:16
+    container_name: sn-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: servicenow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sn-network
+
+  chromadb:
+    image: chromadb/chroma
+    container_name: sn-chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      - sn-network
+
+  ollama:
+    image: ollama/ollama
+    container_name: sn-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - sn-network
+
+volumes:
+  postgres_data:
+  chroma_data:
+  ollama_data:
+
+networks:
+  sn-network:

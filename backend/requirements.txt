@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+langchain
+langchain-community
+langchain-core
+langchain-chroma
+chromadb
+psycopg2-binary
+sqlalchemy
+sentence-transformers
+python-dotenv
+ollama
+pydantic
+langchain-ollama
