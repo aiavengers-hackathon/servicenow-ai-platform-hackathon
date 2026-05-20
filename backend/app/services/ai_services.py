@@ -1,19 +1,29 @@
-from langchain_community.llms import Ollama
+from langchain_openai import AzureChatOpenAI
+from langchain.schema import SystemMessage, HumanMessage
+import os
+from dotenv import load_dotenv
 
-llm = Ollama(
-    model="mistral",
-    base_url="http://ollama:11434"
+load_dotenv()
+
+llm = AzureChatOpenAI(
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview"),
+    model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4")
 )
 
 def generate_response(prompt: str):
 
-    system_prompt = f"""
+    system_prompt = """
     You are a ServiceNow enterprise AI assistant.
-
-    User Request:
-    {prompt}
+    Provide helpful, accurate, and professional responses to user requests.
     """
 
-    response = llm.invoke(system_prompt)
+    messages = [
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=prompt)
+    ]
 
-    return response
+    response = llm.invoke(messages)
+
+    return response.content

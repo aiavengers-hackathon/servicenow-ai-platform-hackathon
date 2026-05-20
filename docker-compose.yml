@@ -19,14 +19,15 @@ services:
       - "5000:5000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/servicenow
-      - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_MODEL=llama3
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_API_VERSION=2024-02-15-preview
+      - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME:-gpt-4}
       - CHROMA_HOST=chromadb
       - CHROMA_PORT=8000
     depends_on:
       - postgres
       - chromadb
-      - ollama
     volumes:
       - ./data:/app/data
     networks:
@@ -57,20 +58,9 @@ services:
     networks:
       - sn-network
 
-  ollama:
-    image: ollama/ollama
-    container_name: sn-ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    networks:
-      - sn-network
-
 volumes:
   postgres_data:
   chroma_data:
-  ollama_data:
 
 networks:
   sn-network:

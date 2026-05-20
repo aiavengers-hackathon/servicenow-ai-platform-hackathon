@@ -4,11 +4,12 @@ langchain
 langchain-community
 langchain-core
 langchain-chroma
+langchain-openai
 chromadb
 psycopg2-binary
 sqlalchemy
 sentence-transformers
 python-dotenv
-ollama
 pydantic
-langchain-ollama
+openai>=1.0.0
+azure-identity
