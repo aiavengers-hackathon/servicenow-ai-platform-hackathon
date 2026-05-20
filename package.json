@@ -1,6 +1,29 @@
 {
-  "dependencies": {
-    "axios": "^1.16.1",
-    "react-router-dom": "^7.15.1"
+  "name": "servicenow-ai-platform",
+  "version": "1.0.0",
+  "description": "ServiceNow AI Platform - AI-Powered Service Management with Azure OpenAI",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && uvicorn app.main:app --reload --host 0.0.0.0 --port 5000",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "echo 'Backend is Python, no build needed'",
+    "build:frontend": "cd frontend && npm run build",
+    "setup": "bash ./scripts/setup.sh",
+    "setup:local": "bash ./scripts/setup-local.sh",
+    "clean": "bash ./scripts/clean.sh"
+  },
+  "keywords": [
+    "servicenow",
+    "ai",
+    "llm",
+    "azure-openai",
+    "chatbot"
+  ],
+  "author": "Your Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.0.0"
   }
 }
