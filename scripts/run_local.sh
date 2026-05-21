@@ -3,6 +3,12 @@ set -euo pipefail
 
 # Usage: ./scripts/run_local.sh [dev|prod]
 MODE=${1:-dev}
+# Optional second argument: 'seed' to enable AUTO_SEED_DEV
+SEED_FLAG=${2:-}
+if [ "$SEED_FLAG" = "seed" ] || [ "$SEED_FLAG" = "autoseed" ] || [ "$SEED_FLAG" = "true" ]; then
+  export AUTO_SEED_DEV=true
+  echo "AUTO_SEED_DEV enabled: backend will seed default roles/admin on startup"
+fi
 ROOT_DIR="$(dirname "$(dirname "$0")")"
 cd "$ROOT_DIR"
 
@@ -47,12 +53,30 @@ fi
 
 BACKEND_PID=$!
 
+# Ensure we cleanup child processes on exit
+cleanup() {
+  echo "Stopping processes..."
+  if [ -n "${FRONTEND_PID:-}" ]; then
+    kill $FRONTEND_PID 2>/dev/null || true
+  fi
+  if [ -n "${BACKEND_PID:-}" ]; then
+    kill $BACKEND_PID 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
 # Frontend setup
 cd ../frontend
 npm install
 if [ "$MODE" = "dev" ]; then
   echo "Starting frontend dev server"
-  npm run dev
+  # start frontend in background so both services run together
+  npm run dev &
+  FRONTEND_PID=$!
+  echo "Backend PID: $BACKEND_PID  Frontend PID: $FRONTEND_PID"
+  echo "Press Ctrl+C to stop both services"
+  # wait for both processes; if either exits, cleanup will run
+  wait $BACKEND_PID $FRONTEND_PID
 else
   echo "Building frontend and serving statically"
   npm run build

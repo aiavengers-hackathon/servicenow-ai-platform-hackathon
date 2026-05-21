@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./layout/Sidebar";
 
 import Dashboard from "./pages/Dashboard";
@@ -7,13 +7,40 @@ import Incidents from "./pages/Incidents";
 import AccessRequests from "./pages/AccessRequests";
 import ChangeRequests from "./pages/ChangeRequests";
 import Admin from "./pages/Admin";
+import Login from "./pages/Login";
 
 function App() {
 
   const [active, setActive] = useState("dashboard");
 
+  // Sync active state with URL hash (supports links like #/incidents)
+  useEffect(() => {
+    const applyHash = () => {
+      const h = window.location.hash || "";
+      if (h.startsWith("#/")) {
+        const key = h.replace("#/", "");
+        if (key) setActive(key);
+      }
+    };
+
+    applyHash();
+    window.addEventListener("hashchange", applyHash);
+    return () => window.removeEventListener("hashchange", applyHash);
+  }, []);
+
+  // update URL hash when active changes (keeps links/bookmarks working)
+  useEffect(() => {
+    const desired = `#/${active}`;
+    if (window.location.hash !== desired) {
+      window.history.replaceState(null, "", desired);
+    }
+  }, [active]);
+
   const renderPage = () => {
     switch (active) {
+
+      case "login":
+        return <Login setActive={setActive} />;
 
       case "ai":
         return <AIAssistant />;
@@ -26,9 +53,6 @@ function App() {
 
       case "change":
         return <ChangeRequests />;
-
-      case "admin":
-        return <Admin />;
 
       default:
         return <Dashboard />;

@@ -14,3 +14,7 @@ pydantic
 openai>=1.0.0
 azure-identity
 gunicorn
+passlib[bcrypt]
+python-jose[cryptography]
+bcrypt
+python-multipart
