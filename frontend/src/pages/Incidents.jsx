@@ -8,10 +8,20 @@ function Incidents() {
   useEffect(() => {
 
     // backend API (you will implement later)
-    api.get("/api/incidents")
-      .then(res => setIncidents(res.data));
+    fetchList();
+
+    async function fetchList(){
+      const res = await api.get("/api/incidents");
+      setIncidents(res.data);
+    }
 
   }, []);
+
+  const updateStatus = async (id, status) => {
+    await api.patch(`/api/incidents/${id}`, { status });
+    const res = await api.get('/api/incidents');
+    setIncidents(res.data);
+  }
 
   return (
     <div>
@@ -35,6 +45,10 @@ function Incidents() {
               <td>{i.description}</td>
               <td>{i.status}</td>
               <td>{i.priority}</td>
+              <td>
+                <button onClick={() => updateStatus(i.id, 'resolved')}>Resolve</button>
+                <button onClick={() => updateStatus(i.id, 'closed')} style={{marginLeft:8}}>Close</button>
+              </td>
             </tr>
           ))}
         </tbody>

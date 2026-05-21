@@ -70,6 +70,16 @@ function Sidebar({ setActive }) {
         🔄 Change Requests
       </div>
 
+      {/* Admin */}
+      <div
+        onClick={() => setActive("admin")}
+        style={itemStyle}
+        onMouseEnter={(e) => e.target.style.background = "#374151"}
+        onMouseLeave={(e) => e.target.style.background = "transparent"}
+      >
+        🛠️ Admin
+      </div>
+
     </div>
   );
 }

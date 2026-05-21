@@ -7,10 +7,20 @@ function ChangeRequests() {
 
   useEffect(() => {
 
-    api.get("/api/change-requests")
-      .then(res => setData(res.data));
+    fetchList();
+
+    async function fetchList(){
+      const res = await api.get('/api/change-requests');
+      setData(res.data);
+    }
 
   }, []);
+
+  const updateStatus = async (id, status) => {
+    await api.patch(`/api/change-requests/${id}`, { status });
+    const res = await api.get('/api/change-requests');
+    setData(res.data);
+  }
 
   return (
     <div>
@@ -25,6 +35,10 @@ function ChangeRequests() {
         }}>
           <p><b>Change:</b> {c.title}</p>
           <p><b>Status:</b> {c.status}</p>
+          <div>
+            <button onClick={() => updateStatus(c.id, 'scheduled')}>Schedule</button>
+            <button onClick={() => updateStatus(c.id, 'completed')} style={{marginLeft:8}}>Complete</button>
+          </div>
         </div>
       ))}
 

@@ -100,24 +100,31 @@ bash scripts/setup.sh
 bash scripts/setup-local.sh
 ```
 
-### 4️⃣ Start Development Servers
+### 4️⃣ Start Development Servers (Local)
+
+You can use the included helper script to run locally.
 
 ```bash
-# Terminal 1: Backend
-cd backend
-source venv/bin/activate
-uvicorn app.main:app --reload
+# dev mode (hot reload frontend and backend)
+bash scripts/run_local.sh dev
 
-# Terminal 2: Frontend
-cd frontend
-npm run dev
+# prod-like local (gunicorn backend + static frontend served)
+bash scripts/run_local.sh prod
 ```
 
-### 5️⃣ Access Application
+### 5️⃣ Docker
 
-- **Frontend**: http://localhost:5173
-- **Backend**: http://localhost:5000
-- **API Docs**: http://localhost:5000/docs
+```bash
+# Build and run stack with Docker Compose
+bash scripts/run_docker.sh
+```
+
+### Access Application
+
+- **Frontend (dev)**: http://localhost:5173
+- **Frontend (prod static)**: http://localhost:3000 (local static serve) or http://localhost (docker)
+- **Backend**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
 
 ## 📖 Documentation
 

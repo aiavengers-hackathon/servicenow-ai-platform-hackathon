@@ -6,6 +6,7 @@ import AIAssistant from "./pages/AIAssistant";
 import Incidents from "./pages/Incidents";
 import AccessRequests from "./pages/AccessRequests";
 import ChangeRequests from "./pages/ChangeRequests";
+import Admin from "./pages/Admin";
 
 function App() {
 
@@ -25,6 +26,9 @@ function App() {
 
       case "change":
         return <ChangeRequests />;
+
+      case "admin":
+        return <Admin />;
 
       default:
         return <Dashboard />;

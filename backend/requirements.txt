@@ -13,3 +13,4 @@ python-dotenv
 pydantic
 openai>=1.0.0
 azure-identity
+gunicorn

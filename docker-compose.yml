@@ -16,7 +16,7 @@ services:
     build: ./backend
     container_name: sn-backend
     ports:
-      - "5000:5000"
+      - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/servicenow
       - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}

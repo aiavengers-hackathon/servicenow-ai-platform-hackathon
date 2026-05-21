@@ -7,10 +7,20 @@ function AccessRequests() {
 
   useEffect(() => {
 
-    api.get("/api/access-requests")
-      .then(res => setData(res.data));
+    fetchList();
+
+    async function fetchList(){
+      const res = await api.get('/api/access-requests');
+      setData(res.data);
+    }
 
   }, []);
+
+  const updateStatus = async (id, status) => {
+    await api.patch(`/api/access-requests/${id}`, { status });
+    const res = await api.get('/api/access-requests');
+    setData(res.data);
+  }
 
   return (
     <div>
@@ -27,6 +37,10 @@ function AccessRequests() {
           <p><b>User:</b> {r.user}</p>
           <p><b>Application:</b> {r.application}</p>
           <p><b>Status:</b> {r.status}</p>
+          <div>
+            <button onClick={() => updateStatus(r.id, 'approved')}>Approve</button>
+            <button onClick={() => updateStatus(r.id, 'denied')} style={{marginLeft:8}}>Deny</button>
+          </div>
         </div>
       ))}
 
