@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 @router.get('/api/incidents')
-def list_incidents(current_user: models.User = Depends(require_roles("admin", "manager"))):
+def list_incidents(current_user: models.User = Depends(get_current_user_optional)):
     session = SessionLocal()
     try:
         items = session.query(Incident).order_by(Incident.id.desc()).all()
@@ -21,10 +21,21 @@ def list_incidents(current_user: models.User = Depends(require_roles("admin", "m
                 'id': i.id,
                 'description': i.summary,
                 'status': i.status,
-                'priority': i.severity
+                'priority': i.severity,
+                'created_at': i.created_at.isoformat() if i.created_at else None
             }
             for i in items
         ]
+    finally:
+        session.close()
+
+
+@router.get('/api/incidents/count')
+def count_incidents():
+    session = SessionLocal()
+    try:
+        count = session.query(Incident).count()
+        return {"count": count}
     finally:
         session.close()
 
@@ -97,7 +108,7 @@ def update_incident(incident_id: int, body: StatusUpdate, current_user: models.U
 
 
 @router.get('/api/access-requests')
-def list_access_requests(current_user: models.User = Depends(require_roles("admin", "manager"))):
+def list_access_requests(current_user: models.User = Depends(get_current_user_optional)):
     session = SessionLocal()
     try:
         items = session.query(AccessRequest).order_by(AccessRequest.id.desc()).all()
@@ -107,10 +118,21 @@ def list_access_requests(current_user: models.User = Depends(require_roles("admi
                 'user': getattr(r, 'user', 'anonymous'),
                 'application': r.application,
                 'status': r.status,
-                'urgency': r.urgency
+                'urgency': r.urgency,
+                'created_at': r.created_at.isoformat() if r.created_at else None
             }
             for r in items
         ]
+    finally:
+        session.close()
+
+
+@router.get('/api/access-requests/count')
+def count_access_requests():
+    session = SessionLocal()
+    try:
+        count = session.query(AccessRequest).count()
+        return {"count": count}
     finally:
         session.close()
 
@@ -178,18 +200,30 @@ def update_access_request(req_id: int, body: StatusUpdate, current_user: models.
 
 
 @router.get('/api/change-requests')
-def list_change_requests(current_user: models.User = Depends(require_roles("admin", "manager"))):
+def list_change_requests(current_user: models.User = Depends(get_current_user_optional)):
     session = SessionLocal()
     try:
         items = session.query(ChangeRequest).order_by(ChangeRequest.id.desc()).all()
         return [
             {
                 'id': c.id,
-                'title': c.description,
-                'status': c.status
+                'title': c.title,
+                'description': c.description,
+                'status': c.status,
+                'created_at': c.created_at.isoformat() if c.created_at else None
             }
             for c in items
         ]
+    finally:
+        session.close()
+
+
+@router.get('/api/change-requests/count')
+def count_change_requests():
+    session = SessionLocal()
+    try:
+        count = session.query(ChangeRequest).count()
+        return {"count": count}
     finally:
         session.close()
 
@@ -254,7 +288,7 @@ def update_change_request(cr_id: int, body: StatusUpdate, current_user: models.U
 
 
 @router.get('/api/chat-history')
-def list_chats(current_user: models.User = Depends(require_roles("admin", "manager"))):
+def list_chats(current_user: models.User = Depends(get_current_user_optional)):
     session = SessionLocal()
     try:
         items = session.query(ChatHistory).order_by(ChatHistory.id.desc()).limit(200).all()
@@ -262,5 +296,25 @@ def list_chats(current_user: models.User = Depends(require_roles("admin", "manag
             {'id': m.id, 'user_message': m.user_message, 'ai_response': m.ai_response}
             for m in items
         ]
+    finally:
+        session.close()
+
+
+@router.get('/api/tickets/recent')
+def get_recent_tickets():
+    session = SessionLocal()
+    try:
+        incidents = session.query(Incident).order_by(Incident.id.desc()).limit(10).all()
+        tickets = []
+        for i in incidents:
+            tickets.append({
+                'id': i.id,
+                'type': 'incident',
+                'title': i.summary,
+                'status': i.status,
+                'priority': i.severity,
+                'created_at': i.created_at.isoformat() if i.created_at else None
+            })
+        return tickets
     finally:
         session.close()

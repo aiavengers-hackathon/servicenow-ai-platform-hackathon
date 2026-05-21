@@ -3,7 +3,9 @@ version: "3.9"
 services:
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: sn-frontend
     ports:
       - "80:80"
@@ -11,27 +13,33 @@ services:
       - backend
     networks:
       - sn-network
+    environment:
+      - REACT_APP_API_URL=http://backend:5000
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: sn-backend
     ports:
-      - "8000:8000"
+      - "5000:5000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/servicenow
       - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
       - AZURE_OPENAI_API_VERSION=2024-02-15-preview
       - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME:-gpt-4}
-      - CHROMA_HOST=chromadb
-      - CHROMA_PORT=8000
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+      - AUTO_SEED_DEV=true
+      - DEV_ADMIN_USER=admin
+      - DEV_ADMIN_PASSWORD=changeme
     depends_on:
       - postgres
-      - chromadb
     volumes:
       - ./data:/app/data
     networks:
       - sn-network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 5000 --reload
 
   postgres:
     image: postgres:16
@@ -47,20 +55,15 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - sn-network
-
-  chromadb:
-    image: chromadb/chroma
-    container_name: sn-chromadb
-    ports:
-      - "8000:8000"
-    volumes:
-      - chroma_data:/chroma/chroma
-    networks:
-      - sn-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
-  chroma_data:
 
 networks:
   sn-network:
+    driver: bridge

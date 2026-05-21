@@ -91,7 +91,12 @@ async def get_current_user_optional(token: Optional[str] = Depends(oauth2_scheme
 
 @router.get('/me')
 def read_me(current_user: models.User = Depends(get_current_user)):
-    return {"username": current_user.username, "email": current_user.email, "role": current_user.role.name if current_user.role else None}
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "role": current_user.role.name if current_user.role else None
+    }
 
 
 def require_roles(*allowed_roles):
@@ -101,17 +106,21 @@ def require_roles(*allowed_roles):
         if current_user.role.name not in allowed_roles:
             raise HTTPException(status_code=403, detail="Insufficient role")
         return current_user
-
     return role_checker
 
 
-@router.post("/token")
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@router.post('/token')
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username},
+        data={"sub": user.username}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -121,6 +130,7 @@ def register_user(username: str, password: str, email: Optional[str] = None, db:
     existing = get_user_by_username(db, username)
     if existing:
         raise HTTPException(status_code=400, detail="User already exists")
+    
     # ensure at least a 'user' role exists
     role = db.query(models.Role).filter(models.Role.name == "user").first()
     if not role:
